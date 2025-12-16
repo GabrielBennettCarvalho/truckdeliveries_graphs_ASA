@@ -48,5 +48,50 @@ int main() {
             }
         }
     }
-    
+    //  Matriz para guardar pares por camião: entregas[ID_CAMIAO] = lista de {A, B}
+    vector<vector<pair<int, int>>> deliveries(M + 1);
+    vector<int> paths(N + 1, 0);
+    // cada i é o cruzamento em que começamos
+    for (int i = 0; i <= N; i++) {
+
+        // limpar o vetor para 0
+        fill(paths.begin(), paths.end(), 0);
+
+        paths[i] = 1; // só há uma maneira de estar no inicio
+
+        for (int u : topological_order) {
+            if (paths[u] == 0) continue; // u n é atingivel a partir de i por isso cagamos
+
+            //se u não é a origem, então u é um Destino 'B' válido
+            if (u != i) {
+                int id_truck = 1 + (paths[u] % M);
+
+                // se o camiao interessa, guardamos o par
+                if (m1 <= id_truck && id_truck <= m2) {
+                    deliveries[id_truck].push_back({i, u});
+                }
+
+            }
+            for (int v : adj[u]) {
+                paths[v] = (paths[v] + paths[u]) % M;
+            }
+         }
+    }
+
+    for (int k = m1; k <= m2; k++) {
+        if (deliveries[k].empty()) continue; // só por segurança
+
+        // imprimir a cena do camiao, tipo C1, C2
+        cout << "C" << k;
+
+        // o sort ja ordena pela ordem lexicografica 
+        sort(deliveries[k].begin(), deliveries[k].end());
+
+        for (const auto& par : deliveries[k]) {
+            cout << " " << par.first << "," << par.second;
+        }
+        
+        cout << "\n";
+    }
+
 }
