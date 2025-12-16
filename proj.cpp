@@ -30,9 +30,9 @@ int main() {
 
     queue<int> q;
     vector<int> topological_order;
+    topological_order.reserve(N);
 
-
-    for (int i = 0; i < N; i++) {
+    for (int i = 1; i <= N; i++) {
         if (in_degree[i] == 0)
         q.push(i);
     }
@@ -50,8 +50,8 @@ int main() {
             }
         }
     }
-    // Criar um mapa reverso: "Em que posição do vetor está o nó X?"
-    vector<int> position_at_top(N + 1);
+    // Criar um mapa reverso para encontrar os indices
+    vector<int> position_at_top(N + 1, -1);
     for (int k = 0; k < N; k++) {
         // Se na ordem topológica o nó 5 está no índice 0, guardamos posicao[5] = 0
         position_at_top[topological_order[k]] = k;
@@ -61,22 +61,26 @@ int main() {
     //  Matriz para guardar pares por camião: entregas[ID_CAMIAO] = lista de {A, B}
     vector<vector<pair<int, int>>> deliveries(M + 1);
     vector<ll> paths(N + 1, 0);
-    // cada i é o cruzamento em que começamos
-    for (int i = 0; i <= N; i++) {
 
-        // limpar o vetor para 0
-        fill(paths.begin(), paths.end(), 0);
+
+    // cada i é o cruzamento em que começamos
+    for (int i = 1; i <= N; i++) {
 
         paths[i] = 1;
-        // Começar o loop interior APENAS onde o 'i' aparece!
-        // Ignoramos todos os nós que estão para trás na ordem topológica,
-        // porque num DAG é impossível chegar lá.
+
+        if (position_at_top[i] == -1) {
+            paths[i] = 0;
+            continue;
+        }
 
         int start_index = position_at_top[i]; 
 
         for (int k = start_index; k < N; k++) { 
             int u = topological_order[k];      
-            if (paths[u] == 0) continue; // u n é atingivel a partir de i por isso cagamos
+
+            int flow = paths[u];
+
+            if (flow == 0) continue;
 
             //se u não é a origem, então u é um Destino 'B' válido
             if (u != i) {
@@ -88,9 +92,18 @@ int main() {
                 }
 
             }
+
             for (int v : adj[u]) {
-                paths[v] = (paths[v] + paths[u]) % M;
+                paths[v] += flow;
+
+                // se passar M subtraimos M em vez de usarmos 
+                //o operador % que é super pesado
+                if (paths[v] > M) {
+                    paths[v] -= M;
+                }
             }
+
+            paths[u] = 0;
          }
     }
 
