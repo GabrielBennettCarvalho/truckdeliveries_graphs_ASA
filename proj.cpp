@@ -4,11 +4,14 @@
 #include <queue>
 
 using namespace std;
-int N, M, m1, m2, K;
-vector<vector<int>> adj; // adjacency list
-vector<int> in_degree;   // qntas setas apontam para aquele cruzamento
+using ull = unsigned long long;
 
-using ll = long long;
+ull M;
+int N, m1, m2, K;
+vector<vector<int>> adj; 
+vector<int> in_degree;   
+
+
 
 int main() {
     std::ios::sync_with_stdio(0); 
@@ -16,15 +19,15 @@ int main() {
 
     if (!(cin >> N >> M >> m1 >> m2 >> K)) return 0;
 
-    adj.resize(N + 1); // +1 pq os cruzamentos sao de 1 a N, ignoramos o 0
-    in_degree.assign(N + 1, 0); // começa tudo a 0
+    adj.resize(N + 1); 
+    in_degree.assign(N + 1, 0); 
 
     for (int i = 0; i < K; i++) {
         int u, v;
         cin >> u >> v;
 
-        adj[u].push_back(v); // u aponta para v
-        in_degree[v]++; // mais uma pessoa a apontar para v
+        adj[u].push_back(v); 
+        in_degree[v]++; 
     }
 
 
@@ -38,55 +41,56 @@ int main() {
     }
 
     while (!q.empty()) {
-        int u = q.front(); // ficar com o primeiro elemento da fila
-        q.pop();           // retirá-lo
+        int u = q.front(); 
+        q.pop();           
 
-        topological_order.push_back(u); // save it
+        topological_order.push_back(u); 
 
         for (int v : adj[u]) {
-            in_degree[v]--; // "removemos" a aresta u -> v
+            in_degree[v]--; 
             if (in_degree[v] == 0) {
-                q.push(v); // se v ficou livre, entra na fila
+                q.push(v); 
             }
         }
     }
-    // Criar um mapa reverso para encontrar os indices
-    vector<int> position_at_top(N + 1, -1);
-    for (int k = 0; k < N; k++) {
-        // Se na ordem topológica o nó 5 está no índice 0, guardamos posicao[5] = 0
-        position_at_top[topological_order[k]] = k;
+
+    int topo_size = topological_order.size();
+
+    vector<int> position_at_topo(N + 1, -1);
+    for (int k = 0; k < topo_size; k++) {
+        position_at_topo[topological_order[k]] = k;
     }
 
 
-    //  Matriz para guardar pares por camião: entregas[ID_CAMIAO] = lista de {A, B}
-    vector<vector<pair<int, int>>> deliveries(M + 1);
-    vector<ll> paths(N + 1, 0);
+    int range_size = m2 - m1 + 1;
+    
+    vector<vector<pair<int, int>>> deliveries(range_size);
+    vector<ull> paths(N + 1, 0);
 
 
-    // cada i é o cruzamento em que começamos
+  
     for (int i = 1; i <= N; i++) {
 
         paths[i] = 1;
 
-        if (position_at_top[i] == -1) {
+        if (position_at_topo[i] == -1) {
             paths[i] = 0;
             continue;
         }
 
-        int start_index = position_at_top[i]; 
+        int start_index = position_at_topo[i]; 
 
-        for (int k = start_index; k < N; k++) { 
+        for (int k = start_index; k < topo_size; k++) { 
             int u = topological_order[k];      
 
-            int flow = paths[u];
+            ull flow = paths[u];
 
             if (flow == 0) continue;
 
-            //se u não é a origem, então u é um Destino 'B' válido
             if (u != i) {
-                int id_truck = 1 + (paths[u] % M);
+                int id_truck = 1 + (flow % M);
 
-                // se o camiao interessa, guardamos o par
+             
                 if (m1 <= id_truck && id_truck <= m2) {
                     deliveries[id_truck].push_back({i, u});
                 }
@@ -94,12 +98,10 @@ int main() {
             }
 
             for (int v : adj[u]) {
-                paths[v] += flow;
-
-                // se passar M subtraimos M em vez de usarmos 
-                //o operador % que é super pesado
-                if (paths[v] > M) {
-                    paths[v] -= M;
+                if (flow > M - paths[v]) {
+                    paths[v] = flow - (M - paths[v]);
+                } else {
+                    paths[v] += flow;
                 }
             }
 
@@ -108,15 +110,15 @@ int main() {
     }
 
     for (int k = m1; k <= m2; k++) {
-        if (deliveries[k].empty()) continue; // só por segurança
 
-        // imprimir a cena do camiao, tipo C1, C2
+
         cout << "C" << k;
 
-        // o sort ja ordena pela ordem lexicografica 
-        sort(deliveries[k].begin(), deliveries[k].end());
+        int idx = k - m1;
 
-        for (const auto& par : deliveries[k]) {
+        sort(deliveries[idx].begin(), deliveries[idx].end());
+
+        for (const auto& par : deliveries[idx]) {
             cout << " " << par.first << "," << par.second;
         }
         
