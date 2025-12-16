@@ -54,14 +54,15 @@ int main() {
         }
     }
 
+    // o tamanho do vetor devia ser N, mas no caso do grafo ser esparso ou por alguma razão o node não tiver sido indexado
     int topo_size = topological_order.size();
-
+    // index map para não realizarmos tantas iterações a procurar "onde estamos"
     vector<int> position_at_topo(N + 1, -1);
     for (int k = 0; k < topo_size; k++) {
         position_at_topo[topological_order[k]] = k;
     }
 
-
+    // offset  de vetor para não rebentar
     int range_size = m2 - m1 + 1;
     
     vector<vector<pair<int, int>>> deliveries(range_size);
@@ -92,11 +93,11 @@ int main() {
 
              
                 if (m1 <= id_truck && id_truck <= m2) {
-                    deliveries[id_truck].push_back({i, u});
+                    deliveries[id_truck - m1].push_back({i, u});
                 }
 
             }
-
+            // para impedir o overflow
             for (int v : adj[u]) {
                 if (flow > M - paths[v]) {
                     paths[v] = flow - (M - paths[v]);
