@@ -67,9 +67,11 @@ int main() {
         // limpar o vetor para 0
         fill(paths.begin(), paths.end(), 0);
 
+        paths[i] = 1;
         // Começar o loop interior APENAS onde o 'i' aparece!
         // Ignoramos todos os nós que estão para trás na ordem topológica,
         // porque num DAG é impossível chegar lá.
+
         int start_index = position_at_top[i]; 
 
         for (int k = start_index; k < N; k++) { 
