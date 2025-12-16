@@ -51,7 +51,7 @@ int main() {
         }
     }
 
-    //  Matriz para guardar pares por camião: entregas[ID_CAMIAO] = lista de {A, B}
+    //  Matriz para guardar pares por camião: deliveris[id_truck] = lista de {A, B}
     vector<vector<pair<int, int>>> deliveries(M + 1);
     vector<ll> paths(N + 1, 0);
     // cada i é o cruzamento em que começamos
