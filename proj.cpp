@@ -8,6 +8,8 @@ int N, M, m1, m2, K;
 vector<vector<int>> adj; // adjacency list
 vector<int> in_degree;   // qntas setas apontam para aquele cruzamento
 
+using ll = long long;
+
 int main() {
     std::ios::sync_with_stdio(0); 
     std::cin.tie(0);
@@ -48,18 +50,30 @@ int main() {
             }
         }
     }
+    // Criar um mapa reverso: "Em que posição do vetor está o nó X?"
+    vector<int> position_at_top(N + 1);
+    for (int k = 0; k < N; k++) {
+        // Se na ordem topológica o nó 5 está no índice 0, guardamos posicao[5] = 0
+        position_at_top[topological_order[k]] = k;
+    }
+
+
     //  Matriz para guardar pares por camião: entregas[ID_CAMIAO] = lista de {A, B}
     vector<vector<pair<int, int>>> deliveries(M + 1);
-    vector<int> paths(N + 1, 0);
+    vector<ll> paths(N + 1, 0);
     // cada i é o cruzamento em que começamos
     for (int i = 0; i <= N; i++) {
 
         // limpar o vetor para 0
         fill(paths.begin(), paths.end(), 0);
 
-        paths[i] = 1; // só há uma maneira de estar no inicio
+        // Começar o loop interior APENAS onde o 'i' aparece!
+        // Ignoramos todos os nós que estão para trás na ordem topológica,
+        // porque num DAG é impossível chegar lá.
+        int start_index = position_at_top[i]; 
 
-        for (int u : topological_order) {
+        for (int k = start_index; k < N; k++) { 
+            int u = topological_order[k];      
             if (paths[u] == 0) continue; // u n é atingivel a partir de i por isso cagamos
 
             //se u não é a origem, então u é um Destino 'B' válido
